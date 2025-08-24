@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Filament\Resources\ProductOptionItemResource\Pages;
+
+use App\Filament\Resources\ProductOptionItemResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListProductOptionItems extends ListRecords
+{
+    protected static string $resource = ProductOptionItemResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make(),
+        ];
+    }
+}

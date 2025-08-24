@@ -1,0 +1,28 @@
+{
+    "status_code": "200",
+    "transaction_id": "6191612e-3ffa-42ce-96b9-5252c6063db6",
+    "gross_amount": "116000.00",
+    "currency": "IDR",
+    "order_id": "ORD-676C5B43D261C",
+    "payment_type": "bank_transfer",
+    "signature_key": "4f01764ae26e17458a32eb1dd0a3e5db3ec762923e186b59cd223afaa0d8a7eb5dc5eba24b4f019f34f546d9ecddac727fb34c019ba8a7e5d1881e580d9fa321",
+    "transaction_status": "settlement",
+    "fraud_status": "accept",
+    "status_message": "Success, transaction is found",
+    "merchant_id": "G724647929",
+    "va_numbers": [
+        {
+            "bank": "bni",
+            "va_number": "9884792926333833"
+        }
+    ],
+    "payment_amounts": [
+        {
+            "amount": "116000.00",
+            "paid_at": "2024-12-26 02:21:44"
+        }
+    ],
+    "transaction_time": "2024-12-26 02:21:44",
+    "settlement_time": "2024-12-26 02:22:28",
+    "expiry_time": "2024-12-27 02:21:43"
+}
