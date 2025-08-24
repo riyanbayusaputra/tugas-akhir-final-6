@@ -39,8 +39,8 @@ class ProductOptionItemResource extends Resource
                 Forms\Components\TextInput::make('additional_price')
                     ->numeric()
                     ->default(0)
-                    ->label('Harga Tambahan')
-                    ->helperText('Masukkan harga tambahan untuk opsi ini.'),
+                    ->label('Harga ')
+                    ->helperText('Masukkan harga tambahan/kurangi untuk opsi ini.'),
              
             ])->columns(2);
     }
@@ -52,7 +52,7 @@ class ProductOptionItemResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->sortable()
                     ->searchable()
-                    ->label('ID'),
+                    ->label('id'),
                 Tables\Columns\TextColumn::make('name')
                     ->sortable()
                     ->searchable()
@@ -61,6 +61,11 @@ class ProductOptionItemResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->label('Kategori Menu'),
+                
+                
+
+
+
                 
 
 

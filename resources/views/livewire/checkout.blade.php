@@ -19,69 +19,201 @@
       </h2>
       
       @foreach($cartItemsWithOptions as $item)
-        <div class="border-b pb-3 mb-3 last:border-b-0 last:mb-0">
+        <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm mb-3 last:mb-0">
           <div class="flex gap-3">
-            <img src="{{$item['product']->first_image_url ?? asset('image/no-pictures.png')}}" 
-                 alt="{{$item['product']->name}}" 
-                 class="w-16 h-16 object-cover rounded">
-            <div class="flex-1">
-              <h3 class="font-medium text-sm">{{$item['product']->name}}</h3>
-              <p class="text-xs text-gray-600">Qty: {{$item['quantity']}}</p>
-              <p class="text-sm">Rp {{number_format($item['base_price'])}}</p>
+            <!-- Product Image -->
+            <div class="flex-shrink-0">
+              <img src="{{$item['product']->first_image_url ?? asset('image/no-pictures.png')}}" 
+                   alt="{{$item['product']->name}}"
+                   loading="lazy"
+                   class="w-20 h-20 object-cover rounded-lg">
             </div>
-          </div>
 
-          @if(!empty($item['custom_options']))
-            <div class="mt-2 bg-blue-50 p-2 rounded">
-              <p class="text-xs font-medium text-blue-700 mb-1">Custom Options:</p>
-              @foreach($item['custom_options'] as $option)
-                <div class="flex justify-between text-xs">
-                  <span>{{$option['item_name']}} 
-                    @if($option['quantity'] > 1)({{$option['quantity']}}x)@endif
+            <!-- Product Details -->
+            <div class="flex-1">
+              <div class="flex items-start justify-between mb-2">
+                <h3 class="text-sm font-semibold text-gray-800 line-clamp-2 flex-1 pr-2">{{$item['product']->name}}</h3>
+              </div>
+
+              <!-- Custom Options Display (sama seperti cart) -->
+              @if(!empty($item['custom_options']))
+                <div class="mb-3 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                  <p class="text-xs font-semibold text-blue-800 mb-2 flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                    </svg>
+                    Pilihan Custom
+                  </p>
+                  
+                  @php
+                    $groupedOptions = [];
+                    foreach($item['custom_options'] as $option) {
+                      $groupedOptions[$option['option_name']][] = $option;
+                    }
+                  @endphp
+                  
+                  @foreach($groupedOptions as $optionName => $optionItems)
+                    <div class="mb-2 last:mb-0">
+                      <div class="text-xs font-bold text-gray-600 mb-1 flex items-center">
+                        @if($optionName == 'Kurangi Item' || $optionName == 'Hapus Item')
+                          <span class="w-3 h-3 bg-red-100 text-red-600 rounded-full flex items-center justify-center mr-2">-</span>
+                        @elseif($optionName == 'Tambah Item')
+                          <span class="w-3 h-3 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-2">+</span>
+                        @elseif($optionName == 'Ganti Item')
+                          <span class="w-3 h-3 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mr-2">⟲</span>
+                        @endif
+                        {{ $optionName }}:
+                      </div>
+                      
+                      <div class="ml-5 space-y-1">
+                        @foreach($optionItems as $optionItem)
+                          <div class="flex justify-between items-center text-xs">
+                            <span class="text-gray-700">
+                              • {{ $optionItem['item_name'] }}
+                              @if($optionItem['quantity'] > 1)
+                                ({{ $optionItem['quantity'] }}x)
+                              @endif
+                            </span>
+                            
+                            @if($optionItem['price'] != 0)
+                              @if($optionItem['price'] > 0)
+                                <span class="text-green-600 font-medium">+Rp {{ number_format($optionItem['subtotal'], 0, ',', '.') }}</span>
+                              @else
+                                <span class="text-red-600 font-medium">-Rp {{ number_format(abs($optionItem['subtotal']), 0, ',', '.') }}</span>
+                              @endif
+                            @endif
+                          </div>
+                        @endforeach
+                      </div>
+                    </div>
+                  @endforeach
+                </div>
+              @endif
+
+              <!-- Price and Quantity Section (sama seperti cart) -->
+              <div class="flex items-center justify-between">
+                <div class="flex flex-col">
+                  <!-- Base Price -->
+                  <span class="text-xs text-gray-500">Harga Dasar: Rp {{ number_format($item['product']->price, 0, ',', '.') }}</span>
+                  
+                  <!-- Total Price per Item (including custom options) -->
+                  <span class="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                    Total: Rp {{ number_format($item['base_price'], 0, ',', '.') }}
                   </span>
-                  <span class="{{ $option['price'] < 0 ? 'text-red-600' : 'text-blue-600' }}">
-                    {{ $option['price'] < 0 ? '-' : '+' }}Rp {{number_format(abs($option['subtotal']))}}
+                  
+                  <!-- Show price difference if there are custom options -->
+                  @if(!empty($item['custom_options']) && $item['base_price'] != $item['product']->price)
+                    @php
+                      $priceDiff = $item['base_price'] - $item['product']->price;
+                    @endphp
+                    @if($priceDiff > 0)
+                      <span class="text-xs text-green-600 font-medium">
+                        <i class="bi bi-arrow-up text-xs"></i> +Rp {{ number_format($priceDiff, 0, ',', '.') }}
+                      </span>
+                    @elseif($priceDiff < 0)
+                      <span class="text-xs text-red-600 font-medium">
+                        <i class="bi bi-arrow-down text-xs"></i> -Rp {{ number_format(abs($priceDiff), 0, ',', '.') }}
+                      </span>
+                    @endif
+                  @endif
+                </div>
+                
+                <!-- Quantity Display -->
+                <div class="flex items-center">
+                  <span class="text-xs text-gray-500 mr-2">Qty:</span>
+                  <span class="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-lg bg-gray-50">
+                    {{$item['quantity']}}
                   </span>
                 </div>
-              @endforeach
-            </div>
-          @endif
+              </div>
 
-          <div class="flex justify-between mt-2 pt-2 border-t">
-            <span class="text-sm font-medium">Total:</span>
-            <span class="font-semibold">Rp {{number_format($item['total_price'])}}</span>
+              <!-- Subtotal for this cart item (sama seperti cart) -->
+              <div class="mt-2 pt-2 border-t border-gray-100">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs text-gray-600">Subtotal ({{ $item['quantity'] }} item)</span>
+                  <span class="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                    Rp {{ number_format($item['total_price'], 0, ',', '.') }}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       @endforeach
 
-      <!-- Total -->
-      <div class="bg-white p-3 rounded mt-3">
-        <div class="flex justify-between mb-2">
-          <span>Subtotal:</span>
-          <span>Rp {{number_format($subtotal)}}</span>
-        </div>
-        @if($customOptionsTotal != 0)
-          <div class="flex justify-between mb-2">
-            <span class="{{ $customOptionsTotal < 0 ? 'text-red-600' : 'text-blue-600' }}">Custom Options:</span>
-            <span class="{{ $customOptionsTotal < 0 ? 'text-red-600' : 'text-blue-600' }}">
-              {{ $customOptionsTotal < 0 ? '-' : '+' }}Rp {{number_format(abs($customOptionsTotal))}}
+      <!-- Total Keseluruhan dengan Breakdown -->
+      <div class="bg-white p-4 rounded-xl border-2 border-blue-100 shadow-sm mt-4">
+        <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
+          <i class="bi bi-calculator mr-2 text-blue-600"></i>
+          Rincian Biaya
+        </h3>
+        
+        <!-- Subtotal Items -->
+        <div class="space-y-2 mb-3">
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-600">Subtotal Produk ({{count($cartItemsWithOptions)}} item):</span>
+            <span class="font-medium">Rp {{number_format($subtotal, 0, ',', '.')}}</span>
+          </div>
+          
+          <!-- Custom Options Total (jika ada) -->
+          @if($customOptionsTotal != 0)
+            <div class="flex justify-between text-sm">
+              <span class="{{ $customOptionsTotal < 0 ? 'text-red-600' : 'text-blue-600' }}">
+                <i class="bi bi-gear mr-1"></i>Custom Options:
+              </span>
+              <span class="{{ $customOptionsTotal < 0 ? 'text-red-600' : 'text-blue-600' }} font-medium">
+                {{ $customOptionsTotal < 0 ? '-' : '+' }}Rp {{number_format(abs($customOptionsTotal), 0, ',', '.')}}
+              </span>
+            </div>
+          @endif
+          
+          <!-- Shipping Cost -->
+          <div class="flex justify-between text-sm" id="shipping-cost-display">
+            <span class="text-gray-600">
+              <i class="bi bi-truck mr-1"></i>Ongkos Kirim:
+            </span>
+            <span id="shipping-amount" class="font-medium">
+              @if($isFreeShipping ?? false)
+                <span class="text-green-600">GRATIS</span>
+              @else
+                Rp {{number_format($shippingCost, 0, ',', '.')}}
+              @endif
             </span>
           </div>
+        </div>
+        
+        <!-- Total Akhir -->
+        <div class="border-t border-gray-200 pt-3">
+          <div class="flex justify-between items-center">
+            <span class="text-lg font-bold text-gray-800">Total Pembayaran:</span>
+            <span class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+              Rp {{number_format($total, 0, ',', '.')}}
+            </span>
+          </div>
+          
+          <!-- Info tambahan total items -->
+          <div class="text-right mt-1">
+            <span class="text-xs text-gray-500">
+              @php
+                $totalQty = array_sum(array_column($cartItemsWithOptions, 'quantity'));
+              @endphp
+              Total {{$totalQty}} item dalam keranjang
+            </span>
+          </div>
+        </div>
+        
+        <!-- Free Shipping Info (jika ada) -->
+        @if($isFreeShipping ?? false)
+          <div class="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
+            <div class="text-xs text-green-700 font-medium flex items-center">
+              <i class="bi bi-gift mr-1"></i>
+              Selamat! Anda mendapat gratis ongkir
+            </div>
+            <div class="text-xs text-green-600 mt-1">
+              {{$freeShippingReason ?? 'Syarat minimum terpenuhi'}}
+            </div>
+          </div>
         @endif
-        <div class="flex justify-between" id="shipping-cost-display">
-          <span>Ongkir:</span>
-          <span id="shipping-amount">
-            @if($isFreeShipping ?? false)
-              <span class="text-green-600">GRATIS</span>
-            @else
-              Rp {{number_format($shippingCost)}}
-            @endif
-          </span>
-        </div>
-        <div class="flex justify-between font-bold text-lg border-t pt-2 mt-2">
-          <span>Total:</span>
-          <span class="text-blue-600">Rp {{number_format($total)}}</span>
-        </div>
       </div>
     </div>
 
@@ -115,11 +247,6 @@
       <h2 class="font-semibold mb-3 flex items-center">
         <i class="bi bi-geo-alt mr-2"></i>Lokasi Pengiriman
       </h2>
-      
-      {{-- <div class="bg-blue-50 p-3 rounded mb-3 text-sm text-blue-800">
-        <i class="bi bi-info-circle mr-1"></i>
-        Gratis ongkir untuk radius ≤10km atau belanja ≥Rp 1.000.000
-      </div> --}}
 
       <div class="space-y-3">
         <div>
@@ -297,16 +424,9 @@
   <!-- Bottom Button -->
   <div class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-[480px] bg-white border-t p-4">
     
-    {{-- <!-- Info Gratis Ongkir -->
-    @if($isFreeShipping ?? false)
-      <div class="mb-3 p-2 bg-green-100 text-green-700 text-sm rounded text-center">
-        <i class="bi bi-gift mr-1"></i>Gratis Ongkir: {{$freeShippingReason ?? 'Syarat terpenuhi'}}
-      </div>
-    @endif --}}
-
     <!-- Total -->
     <div class="text-center mb-3">
-      <p class="text-lg font-bold">Total: Rp {{number_format($total)}}</p>
+      <p class="text-lg font-bold">Total: Rp {{number_format($total, 0, ',', '.')}}</p>
       <p class="text-sm text-gray-600">{{count($carts ?? [])}} Menu</p>
     </div>
 
@@ -366,7 +486,7 @@
 
     // DISESUAIKAN: Konfigurasi ongkir harus sama dengan PHP shippingConfig
     const shippingConfig = {
-        rate_per_km: 2000,    // Sama dengan PHP
+        rate_per_km: 3000,    // Sama dengan PHP
         minimum_cost: 5000,   // Sama dengan PHP
         free_shipping_threshold: 100000000000000, // Sama dengan PHP
         free_shipping_radius: 10.0 // Sama dengan PHP (bukan 3.0) - DIKOMENTAR UNTUK SEMENTARA

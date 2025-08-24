@@ -86,7 +86,7 @@ class Checkout extends Component
 
     // ===== KONFIGURASI FREE SHIPPING =====
     private $shippingConfig = [
-        'rate_per_km' => 2000,    // Rp 2.000 per km
+        'rate_per_km' => 3000,    // Rp 2.000 per km
         'minimum_cost' => 5000,   // Ongkir minimal Rp 5.000
         
         // GRATIS ONGKIR BERDASARKAN MINIMUM BELANJA
